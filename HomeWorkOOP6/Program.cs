@@ -129,6 +129,7 @@
     {
         public int Money = 300;
         public List<Product> ProductsInInvetory = new();
+
         public string Name { get; private set; }
 
         public Customer(string name)
