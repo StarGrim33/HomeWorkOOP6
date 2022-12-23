@@ -75,7 +75,8 @@
 
             if (TryGetProduct(out Product? product, customer))
             {
-                customer.ProductsInInvetory.Add(product);
+                //customer._productsInInvetory.Add(product);
+                customer.AddToInventory(product);
                 Console.WriteLine("Покупка успешна");
                 Console.ReadKey();
             }
@@ -127,8 +128,8 @@
 
     class Customer
     {
-        public int Money = 300;
-        public List<Product> ProductsInInvetory = new();
+        public int Money = 1500;
+        private List<Product> _productsInInvetory = new();
 
         public string Name { get; private set; }
 
@@ -141,11 +142,11 @@
         {
             Console.WriteLine($"Золото: {Money}");
 
-            if (ProductsInInvetory.Count > 0)
+            if (_productsInInvetory.Count > 0)
             {
-                for (int i = 0; i < ProductsInInvetory.Count; i++)
+                for (int i = 0; i < _productsInInvetory.Count; i++)
                 {
-                    Console.WriteLine($"{ProductsInInvetory[i].Id}.{ProductsInInvetory[i].ProductName}, количество: {userProductChoice}-шт.");
+                    Console.WriteLine($"{_productsInInvetory[i].Id}.{_productsInInvetory[i].ProductName}, количество: {userProductChoice}-шт.");
                 }
             }
             else
@@ -154,6 +155,11 @@
             }
 
             Console.ReadKey();
+        }
+
+        public void AddToInventory(Product product)
+        {
+            _productsInInvetory.Add(product);
         }
     }
 
