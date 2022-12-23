@@ -65,7 +65,7 @@
         public void Sell(Customer customer)
         {
             Console.Clear();
-            Console.WriteLine($"Золото: {customer._money}");
+            Console.WriteLine($"Золото: {customer.Money}");
             Console.WriteLine("Ассортимент товаров: ");
 
             for (int i = 0; i < _products.Count; i++)
@@ -103,13 +103,9 @@
                     {
                         product = product1;
 
-                        if (product1.Buy(UserProductChoice, customer))
+                        if (customer.Buy(product, UserProductChoice, customer))
                         {
                             return true;
-                        }
-                        else
-                        {
-                            continue;
                         }
                     }
                 }
@@ -127,9 +123,8 @@
 
     class Customer
     {
-        private Product _product;
         private List<Product> _productsInInvetory = new();
-        private int _money = 1500;
+        public int Money { get; private set; } = 1500;
         public string Name { get; private set; }
 
         public Customer(string name)
@@ -139,7 +134,7 @@
 
         public void ShowInventory(int userProductChoice)
         {
-            Console.WriteLine($"Золото: {_money}");
+            Console.WriteLine($"Золото: {Money}");
 
             if (_productsInInvetory.Count > 0)
             {
@@ -161,14 +156,14 @@
             _productsInInvetory.Add(product);
         }
 
-        public bool Buy(int productCount, Customer customer)
+        public bool Buy(Product product, int productCount, Customer customer)
         {
-            bool isBuy = _product.Available >= productCount && customer._money >= _product.Cost;
+            bool isBuy = product.Available >= productCount && customer.Money >= product.Cost;
 
             if (isBuy)
             {
-                _product.Available -= productCount;
-                customer._money -= _product.Cost * productCount;
+                product.Available -= productCount;
+                customer.Money -= product.Cost * productCount;
                 return true;
             }
             else
