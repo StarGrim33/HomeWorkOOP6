@@ -23,7 +23,7 @@
                 Console.WriteLine($"{CommandExit}-Уйти");
 
                 string userInput = Console.ReadLine();
-
+                
                 switch (userInput)
                 {
                     case CommandBuyProduct:
@@ -65,7 +65,7 @@
         public void Sell(Customer customer)
         {
             Console.Clear();
-            Console.WriteLine($"Золото: {customer.Money}");
+            Console.WriteLine($"Золото: {customer._money}");
             Console.WriteLine("Ассортимент товаров: ");
 
             for (int i = 0; i < _products.Count; i++)
@@ -75,7 +75,6 @@
 
             if (TryGetProduct(out Product? product, customer))
             {
-                //customer._productsInInvetory.Add(product);
                 customer.AddToInventory(product);
                 Console.WriteLine("Покупка успешна");
                 Console.ReadKey();
@@ -128,9 +127,9 @@
 
     class Customer
     {
-        public int Money = 1500;
+        private Product _product;
         private List<Product> _productsInInvetory = new();
-
+        private int _money = 1500;
         public string Name { get; private set; }
 
         public Customer(string name)
@@ -140,7 +139,7 @@
 
         public void ShowInventory(int userProductChoice)
         {
-            Console.WriteLine($"Золото: {Money}");
+            Console.WriteLine($"Золото: {_money}");
 
             if (_productsInInvetory.Count > 0)
             {
@@ -161,6 +160,22 @@
         {
             _productsInInvetory.Add(product);
         }
+
+        public bool Buy(int productCount, Customer customer)
+        {
+            bool isBuy = _product.Available >= productCount && customer._money >= _product.Cost;
+
+            if (isBuy)
+            {
+                _product.Available -= productCount;
+                customer._money -= _product.Cost * productCount;
+                return true;
+            }
+            else
+            {
+                return isBuy;
+            }
+        }
     }
 
     class Product
@@ -176,22 +191,6 @@
             ProductName = productName;
             Cost = cost;
             Available = available;
-        }
-
-        public bool Buy(int productCount, Customer customer)
-        {
-            bool isBuy = (Available >= productCount && customer.Money >= Cost);
-
-            if (isBuy)
-            {
-                Available -= productCount;
-                customer.Money -= Cost * productCount;
-                return true;
-            }
-            else
-            {
-                return isBuy;
-            }
         }
     }
 }
