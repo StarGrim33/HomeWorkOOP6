@@ -23,7 +23,7 @@
                 Console.WriteLine($"{CommandExit}-Уйти");
 
                 string userInput = Console.ReadLine();
-                
+
                 switch (userInput)
                 {
                     case CommandBuyProduct:
@@ -68,12 +68,9 @@
             Console.WriteLine($"Золото: {customer.Money}");
             Console.WriteLine("Ассортимент товаров: ");
 
-            for (int i = 0; i < _products.Count; i++)
-            {
-                Console.WriteLine($"{_products[i].Id}.{_products[i].ProductName}:{_products[i].Cost}-золотых. Доступно:{_products[i].Available}");
-            }
+            ShowProducts();
 
-            if (TryGetProduct(out Product? product, customer))
+            if (GetProduct(out Product? product, customer))
             {
                 customer.AddToInventory(product);
                 Console.WriteLine("Покупка успешна");
@@ -85,32 +82,50 @@
             }
         }
 
-        public bool TryGetProduct(out Product? product, Customer customer)
+        private void ShowProducts()
+        {
+            for (int i = 0; i < _products.Count; i++)
+            {
+                Console.WriteLine($"{_products[i].Id}.{_products[i].ProductName}:{_products[i].Cost}-золотых. Доступно:{_products[i].Available}");
+            }
+        }
+
+        private bool GetProduct(out Product? product, Customer customer)
         {
             product = null;
 
             Console.WriteLine("Выберите товар:");
 
-            if (int.TryParse(Console.ReadLine(), out int number))
+            if (int.TryParse(Console.ReadLine(), out int numberProduct))
             {
                 Console.WriteLine("Выберите количество товара: ");
-                UserProductChoice = Convert.ToInt32(Console.ReadLine());
 
-                foreach (Product product1 in _products)
+                if (int.TryParse(Console.ReadLine(), out int Quantity))
                 {
+                    UserProductChoice = Quantity;
 
-                    if (number == product1.Id && product1.Available >= 1)
+                    foreach (Product _product in _products)
                     {
-                        product = product1;
 
-                        if (customer.Buy(product, UserProductChoice, customer))
+                        if (numberProduct == _product.Id && _product.Available >= 1)
                         {
-                            return true;
+                            product = _product;
+
+                            if (customer.Buy(product, UserProductChoice, customer))
+                            {
+                                return true;
+                            }
                         }
                     }
-                }
 
-                return false;
+                    return false;
+                }
+                else
+                {
+                    Console.WriteLine("Нужно ввести число.");
+                    Console.ReadKey();
+                    return false;
+                }
             }
             else
             {
@@ -178,7 +193,7 @@
         public int Id { get; private set; }
         public string ProductName { get; private set; }
         public int Cost { get; private set; }
-        public int Available { get;  set; }
+        public int Available { get; set; }
 
         public Product(int id, string productName, int cost, int available)
         {
