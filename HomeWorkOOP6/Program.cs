@@ -30,7 +30,7 @@
                         seller.Sell(customer);
                         break;
                     case CommandShowInventory:
-                        customer.ShowInventory(seller.UserProductChoice);
+                        customer.ShowInventory(seller.UserQuantityChoice);
                         break;
                     case CommandExit:
                         isProgramOn = false;
@@ -47,7 +47,7 @@
     {
         private List<Product> _products = new();
         public string Name { get; private set; }
-        public int UserProductChoice { get; private set; }
+        public int UserQuantityChoice { get; private set; }
 
         public Seller(string name)
         {
@@ -70,7 +70,7 @@
 
             ShowProducts();
 
-            if (GetProduct(out Product? product, customer))
+            if (TryTakeProduct(out Product? product, customer))
             {
                 customer.AddToInventory(product);
                 Console.WriteLine("Покупка успешна");
@@ -90,7 +90,7 @@
             }
         }
 
-        private bool GetProduct(out Product? product, Customer customer)
+        private bool TryTakeProduct(out Product? product, Customer customer)
         {
             product = null;
 
@@ -100,18 +100,18 @@
             {
                 Console.WriteLine("Выберите количество товара: ");
 
-                if (int.TryParse(Console.ReadLine(), out int Quantity))
+                if (int.TryParse(Console.ReadLine(), out int quantity))
                 {
-                    UserProductChoice = Quantity;
+                    UserQuantityChoice = quantity;
 
-                    foreach (Product _product in _products)
+                    foreach (Product produсt in _products)
                     {
 
-                        if (numberProduct == _product.Id && _product.Available >= 1)
+                        if (numberProduct == produсt.Id && produсt.Available >= 1)
                         {
-                            product = _product;
+                            product = produсt;
 
-                            if (customer.Buy(product, UserProductChoice, customer))
+                            if (customer.TryBuy(produсt, UserQuantityChoice, customer))
                             {
                                 return true;
                             }
@@ -171,13 +171,13 @@
             _productsInInvetory.Add(product);
         }
 
-        public bool Buy(Product product, int productCount, Customer customer)
+        public bool TryBuy(Product product, int productCount, Customer customer)
         {
             bool isBuy = product.Available >= productCount && customer.Money >= product.Cost;
 
             if (isBuy)
             {
-                product.Available -= productCount;
+                product.ChangeAvailability(productCount);
                 customer.Money -= product.Cost * productCount;
                 return true;
             }
@@ -193,7 +193,7 @@
         public int Id { get; private set; }
         public string ProductName { get; private set; }
         public int Cost { get; private set; }
-        public int Available { get; set; }
+        public int Available { get; private set; }
 
         public Product(int id, string productName, int cost, int available)
         {
@@ -201,6 +201,11 @@
             ProductName = productName;
             Cost = cost;
             Available = available;
+        }
+
+        public void ChangeAvailability(int productCount)
+        {
+            Available -= productCount;
         }
     }
 }
