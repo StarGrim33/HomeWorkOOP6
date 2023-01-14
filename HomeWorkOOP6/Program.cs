@@ -22,19 +22,22 @@
                 Console.WriteLine($"{CommandShowInventory}-Показать инвентарь");
                 Console.WriteLine($"{CommandExit}-Уйти");
 
-                string userInput = Console.ReadLine();
+                string? userInput = Console.ReadLine();
 
                 switch (userInput)
                 {
                     case CommandBuyProduct:
                         seller.Sell(customer);
                         break;
+
                     case CommandShowInventory:
-                        customer.ShowInventory(seller.UserQuantityChoice);
+                        customer.ShowInventory();
                         break;
+
                     case CommandExit:
                         isProgramOn = false;
                         break;
+
                     default:
                         Console.WriteLine("Герцог: Какое жалкое зрелище");
                         break;
@@ -43,23 +46,34 @@
         }
     }
 
-    class Seller
+    class Human
     {
-        private List<Product> _products = new();
-        public string Name { get; private set; }
-        public int UserQuantityChoice { get; private set; }
-
-        public Seller(string name)
+        public Human(string name)
         {
             Name = name;
-            _products.Add(new Product(1, "Лечебное зелье", 500, 5));
-            _products.Add(new Product(2, "Зелье выносливости", 400, 5));
-            _products.Add(new Product(3, "Пистолетные патроны", 300, 200));
-            _products.Add(new Product(4, "Патроны для дробовика", 500, 100));
-            _products.Add(new Product(5, "Винтовочные патроны", 700, 20));
-            _products.Add(new Product(6, "Граната", 600, 2));
-            _products.Add(new Product(7, "Отмычка", 500, 10));
-            _products.Add(new Product(8, "Коктейль молотова", 700, 4));
+        }
+
+        public string Name { get; set; }
+    }
+
+    class Seller : Human
+    {
+        private List<Stack> _stack = new();
+
+        public Seller(string name) : base(name)
+        {
+            Name = name;
+            _stack = new List<Stack>()
+            {
+                new Stack(new Product("Лечебное зелье", 500), 5),
+                new Stack(new Product("Зелье выносливости", 400), 5),
+                new Stack(new Product("Пистолетные патроны", 300), 200),
+                new Stack(new Product("Патроны для дробовика", 500), 100),
+                new Stack(new Product("Винтовочные патроны", 700), 20),
+                new Stack(new Product("Граната", 600), 2),
+                new Stack(new Product("Отмычка", 500), 10),
+                new Stack(new Product("Коктейль молотова", 700), 4),
+            };
         }
 
         public void Sell(Customer customer)
@@ -70,9 +84,9 @@
 
             ShowProducts();
 
-            if (TryTakeProduct(out Product? product, customer))
+            if (TryTakeProduct(out Stack stack))
             {
-                customer.AddToInventory(product);
+                customer.Buy(stack);
                 Console.WriteLine("Покупка успешна");
                 Console.ReadKey();
             }
@@ -82,80 +96,76 @@
             }
         }
 
-        private void ShowProducts()
+        private bool TryTakeProduct(out Stack stack)
         {
-            for (int i = 0; i < _products.Count; i++)
-            {
-                Console.WriteLine($"{_products[i].Id}.{_products[i].ProductName}:{_products[i].Cost}-золотых. Доступно:{_products[i].Available}");
-            }
-        }
-
-        private bool TryTakeProduct(out Product? product, Customer customer)
-        {
-            product = null;
+            stack = null;
 
             Console.WriteLine("Выберите товар:");
 
-            if (int.TryParse(Console.ReadLine(), out int numberProduct))
-            {
-                Console.WriteLine("Выберите количество товара: ");
-
-                if (int.TryParse(Console.ReadLine(), out int quantity))
-                {
-                    UserQuantityChoice = quantity;
-
-                    foreach (Product produсt in _products)
-                    {
-
-                        if (numberProduct == produсt.Id && produсt.Available >= 1)
-                        {
-                            product = produсt;
-
-                            if (customer.TryBuy(produсt, UserQuantityChoice, customer))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-
-                    return false;
-                }
-                else
-                {
-                    Console.WriteLine("Нужно ввести число.");
-                    Console.ReadKey();
-                    return false;
-                }
-            }
-            else
+            if (int.TryParse(Console.ReadLine(), out int numberProduct) == false)
             {
                 Console.WriteLine("Ошибка");
-                product = null;
                 return false;
+            }
+
+            if(numberProduct < 0 || numberProduct >= _stack.Count)
+            {
+                Console.WriteLine("Таких продуктов нет");
+                return false;
+            }
+
+            Console.WriteLine("Выберите количество товара: ");
+
+            if (int.TryParse(Console.ReadLine(), out int quantity) == false)
+            {
+                Console.WriteLine("Нужно ввести число.");
+                return false;
+            }
+
+            if (_stack[numberProduct].TryGetProduct(out stack, quantity) == false)
+            {
+                Console.WriteLine("Недостаточно количество");
+                return false;
+            }
+
+            return true;
+        }
+
+        private void ShowProducts()
+        {
+            for (int i = 0; i < _stack.Count; i++)
+            {
+                var stack = _stack[i];
+                Console.Write($"{i + 1}.");
+                stack.ShowInfo();
+                Console.WriteLine();
             }
         }
     }
 
-    class Customer
+    class Customer : Human
     {
-        private List<Product> _productsInInvetory = new();
-        public int Money { get; private set; } = 1500;
-        public string Name { get; private set; }
-
-        public Customer(string name)
+        private List<Stack> _stack = new();
+        
+        public Customer(string name) : base(name)
         {
             Name = name;
         }
 
-        public void ShowInventory(int userProductChoice)
+        public int Money { get; private set; } = 1500;
+
+        public void ShowInventory()
         {
             Console.WriteLine($"Золото: {Money}");
 
-            if (_productsInInvetory.Count > 0)
+            if (_stack.Count > 0)
             {
-                for (int i = 0; i < _productsInInvetory.Count; i++)
+                for (int i = 0; i < _stack.Count; i++)
                 {
-                    Console.WriteLine($"{_productsInInvetory[i].Id}.{_productsInInvetory[i].ProductName}, количество: {userProductChoice}-шт.");
+                    var stack = _stack[i];
+                    Console.Write($"{i + 1}.");
+                    stack.ShowInfo();
+                    Console.WriteLine();
                 }
             }
             else
@@ -166,46 +176,72 @@
             Console.ReadKey();
         }
 
-        public void AddToInventory(Product product)
+        public void Buy(Stack stack)
         {
-            _productsInInvetory.Add(product);
-        }
-
-        public bool TryBuy(Product product, int productCount, Customer customer)
-        {
-            bool isBuy = product.Available >= productCount && customer.Money >= product.Cost;
-
-            if (isBuy)
+            foreach (Stack currentStack in _stack)
             {
-                product.ChangeAvailability(productCount);
-                customer.Money -= product.Cost * productCount;
-                return true;
+                if (currentStack.Product == stack.Product)
+                {
+                    currentStack.AddQuantity(stack.Quantity);
+                    Money -= stack.Product.Cost;
+                    return;
+                }
             }
-            else
-            {
-                return isBuy;
-            }
+
+            _stack.Add(stack);
         }
     }
 
     class Product
     {
-        public int Id { get; private set; }
-        public string ProductName { get; private set; }
-        public int Cost { get; private set; }
-        public int Available { get; private set; }
-
-        public Product(int id, string productName, int cost, int available)
+        public Product(string productName, int cost)
         {
-            Id = id;
-            ProductName = productName;
+            Name = productName;
             Cost = cost;
-            Available = available;
         }
 
-        public void ChangeAvailability(int productCount)
+        public string Name { get; private set; }
+        public int Cost { get; private set; }
+    }
+
+    class Stack
+    {
+        public Stack(Product product, int quantity)
         {
-            Available -= productCount;
+            Product = product;
+            Quantity = quantity;
+        }
+
+        public Product Product { get; }
+        public int Quantity { get; private set; }
+
+        public bool TryGetProduct(out Stack stack, int quantity)
+        {
+            stack = null;
+
+            if (quantity < 0)
+            {
+                return false;
+            }
+
+            if (quantity > Quantity)
+            {
+                return false;
+            }
+
+            Quantity -= quantity;
+            stack = new Stack(Product, quantity);
+            return true;
+        }
+
+        public void AddQuantity(int quantity)
+        {
+            Quantity += quantity;
+        }
+
+        public void ShowInfo()
+        {
+            Console.Write($"{Product.Name}, стоимость: {Product.Cost}, количество: {Quantity}-шт.");
         }
     }
 }
