@@ -183,11 +183,11 @@
                 if (currentStack.Product == stack.Product)
                 {
                     currentStack.AddQuantity(stack.Quantity);
-                    Money -= stack.Product.Cost;
                     return;
                 }
             }
 
+            Money -= stack.Product.Cost * stack.Quantity;
             _stack.Add(stack);
         }
     }
