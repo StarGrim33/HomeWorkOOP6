@@ -31,7 +31,7 @@
                         break;
 
                     case CommandShowInventory:
-                        customer.ShowInventory();
+                        customer.ShowProducts();
                         break;
 
                     case CommandExit:
@@ -46,20 +46,31 @@
         }
     }
 
-    class Human
+    abstract class Human
     {
+        protected List<Stack> _stack = new();
+
         public Human(string name)
         {
             Name = name;
         }
 
-        public string Name { get; set; }
+        public string Name { get; protected set; }
+
+        public virtual void ShowProducts()
+        {
+            for (int i = 0; i < _stack.Count; i++)
+            {
+                var stack = _stack[i];
+                Console.Write($"{i + 1}.");
+                stack.ShowInfo();
+                Console.WriteLine();
+            }
+        }
     }
 
     class Seller : Human
     {
-        private List<Stack> _stack = new();
-
         public Seller(string name) : base(name)
         {
             Name = name;
@@ -122,7 +133,7 @@
                 return false;
             }
 
-            if (_stack[numberProduct].TryGetProduct(out stack, quantity) == false)
+            if (_stack[numberProduct].TryGetProducts(out stack, quantity) == false)
             {
                 Console.WriteLine("Недостаточно количество");
                 return false;
@@ -130,31 +141,15 @@
 
             return true;
         }
-
-        private void ShowProducts()
-        {
-            for (int i = 0; i < _stack.Count; i++)
-            {
-                var stack = _stack[i];
-                Console.Write($"{i + 1}.");
-                stack.ShowInfo();
-                Console.WriteLine();
-            }
-        }
     }
 
     class Customer : Human
-    {
-        private List<Stack> _stack = new();
-        
-        public Customer(string name) : base(name)
-        {
-            Name = name;
-        }
+    {        
+        public Customer(string name) : base(name) {}
 
         public int Money { get; private set; } = 1500;
 
-        public void ShowInventory()
+        public override void ShowProducts()
         {
             Console.WriteLine($"Золото: {Money}");
 
@@ -215,7 +210,7 @@
         public Product Product { get; }
         public int Quantity { get; private set; }
 
-        public bool TryGetProduct(out Stack stack, int quantity)
+        public bool TryGetProducts(out Stack stack, int quantity)
         {
             stack = null;
 
