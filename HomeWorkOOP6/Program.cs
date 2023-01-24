@@ -48,7 +48,7 @@
 
     abstract class Human
     {
-        protected List<Stack> _stack = new();
+        protected List<Stack> Stack = new();
 
         public Human(string name)
         {
@@ -59,9 +59,9 @@
 
         public virtual void ShowProducts()
         {
-            for (int i = 0; i < _stack.Count; i++)
+            for (int i = 0; i < Stack.Count; i++)
             {
-                var stack = _stack[i];
+                var stack = Stack[i];
                 Console.Write($"{i + 1}.");
                 stack.ShowInfo();
                 Console.WriteLine();
@@ -74,7 +74,7 @@
         public Seller(string name) : base(name)
         {
             Name = name;
-            _stack = new List<Stack>()
+            Stack = new List<Stack>()
             {
                 new Stack(new Product("Лечебное зелье", 500), 5),
                 new Stack(new Product("Зелье выносливости", 400), 5),
@@ -119,7 +119,7 @@
                 return false;
             }
 
-            if (numberProduct < 0 || numberProduct >= _stack.Count)
+            if (numberProduct < 0 || numberProduct >= Stack.Count)
             {
                 Console.WriteLine("Таких продуктов нет");
                 return false;
@@ -133,7 +133,7 @@
                 return false;
             }
 
-            if (_stack[numberProduct].TryGetProducts(out stack, quantity, customer) == false)
+            if (Stack[numberProduct].TryGetProducts(out stack, quantity, customer) == false)
             {
                 Console.WriteLine("Недостаточно количество");
                 return false;
@@ -153,11 +153,11 @@
         {
             Console.WriteLine($"Золото: {Money}");
 
-            if (_stack.Count > 0)
+            if (Stack.Count > 0)
             {
-                for (int i = 0; i < _stack.Count; i++)
+                for (int i = 0; i < Stack.Count; i++)
                 {
-                    var stack = _stack[i];
+                    var stack = Stack[i];
                     Console.Write($"{i + 1}.");
                     stack.ShowInfo();
                     Console.WriteLine();
@@ -173,7 +173,7 @@
 
         public void Buy(Stack stack)
         {
-            foreach (Stack currentStack in _stack)
+            foreach (Stack currentStack in Stack)
             {
                 if (currentStack.Product == stack.Product)
                 {
@@ -183,7 +183,7 @@
             }
 
             Money -= stack.Product.Cost * stack.Quantity;
-            _stack.Add(stack);
+            Stack.Add(stack);
         }
     }
 
