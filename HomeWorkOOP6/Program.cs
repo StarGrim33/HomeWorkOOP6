@@ -95,7 +95,7 @@
 
             ShowProducts();
 
-            if (TryTakeProduct(out Stack stack))
+            if (TryTakeProduct(out Stack stack, customer))
             {
                 customer.Buy(stack);
                 Console.WriteLine("Покупка успешна");
@@ -107,7 +107,7 @@
             }
         }
 
-        private bool TryTakeProduct(out Stack stack)
+        private bool TryTakeProduct(out Stack stack, Customer customer)
         {
             stack = null;
 
@@ -119,7 +119,7 @@
                 return false;
             }
 
-            if(numberProduct < 0 || numberProduct >= _stack.Count)
+            if (numberProduct < 0 || numberProduct >= _stack.Count)
             {
                 Console.WriteLine("Таких продуктов нет");
                 return false;
@@ -133,7 +133,7 @@
                 return false;
             }
 
-            if (_stack[numberProduct].TryGetProducts(out stack, quantity) == false)
+            if (_stack[numberProduct].TryGetProducts(out stack, quantity, customer) == false)
             {
                 Console.WriteLine("Недостаточно количество");
                 return false;
@@ -144,8 +144,8 @@
     }
 
     class Customer : Human
-    {        
-        public Customer(string name) : base(name) {}
+    {
+        public Customer(string name) : base(name) { }
 
         public int Money { get; private set; } = 1500;
 
@@ -210,7 +210,7 @@
         public Product Product { get; }
         public int Quantity { get; private set; }
 
-        public bool TryGetProducts(out Stack stack, int quantity)
+        public bool TryGetProducts(out Stack stack, int quantity, Customer customer)
         {
             stack = null;
 
@@ -221,6 +221,13 @@
 
             if (quantity > Quantity)
             {
+                return false;
+            }
+
+            if (customer.Money < Product.Cost * quantity)
+            {
+                Console.WriteLine("Недостаточно денег");
+                Console.ReadKey();
                 return false;
             }
 
